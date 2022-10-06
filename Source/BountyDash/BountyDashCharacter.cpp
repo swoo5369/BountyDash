@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "EngineUtils.h"
 
 // Sets default values
 ABountyDashCharacter::ABountyDashCharacter()
@@ -73,6 +74,18 @@ void ABountyDashCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	for (TActorIterator<ATargetPoint> TargetIter(GetWorld()); TargetIter; ++TargetIter)
+	{
+		TargetArray.Add(*TargetIter);
+	}
+	
+	auto SortPred = [](const AActor& A, const AActor& B)->bool
+	{
+		return(A.GetActorLocation().Y < B.GetActorLocation().Y);
+	};
+	TargetArray.Sort(SortPred);
+
+	CurrentLocation = ((TargetArray.Num() / 2) + (TargetArray.Num() % 2) - 1);
 }
 
 // Called every frame
@@ -87,6 +100,45 @@ void ABountyDashCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	check(InputComponent);
+	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	InputComponent->BindAction("MoveRight", IE_Pressed, this, &ABountyDashCharacter::MoveRight);
+	InputComponent->BindAction("MoveLeft", IE_Pressed, this, &ABountyDashCharacter::MoveLeft);
+}
+
+void ABountyDashCharacter::ScoreUp()
+{
+}
+
+void ABountyDashCharacter::MoveRight()
+{
+	if ((Controller != nullptr))
+	{
+		if (CurrentLocation < TargetArray.Num() - 1)
+		{
+			++CurrentLocation;
+		}
+		else
+		{
+
+		}
+	}
+}
+
+void ABountyDashCharacter::MoveLeft()
+{
+	if ((Controller != nullptr))
+	{
+		if (CurrentLocation > 0)
+		{
+			--CurrentLocation;
+		}
+		else
+		{
+
+		}
+	}
 }
 
 void ABountyDashCharacter::MyOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
