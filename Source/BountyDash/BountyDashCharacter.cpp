@@ -4,10 +4,12 @@
 #include "BountyDashCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EngineUtils.h"
+#include "Engine/TargetPoint.h"
+#include "Math/UnrealMathUtility.h"
 
 // Sets default values
 ABountyDashCharacter::ABountyDashCharacter()
@@ -93,6 +95,17 @@ void ABountyDashCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (TargetArray.Num() > 0)
+	{
+		FVector targetLoc = TargetArray[CurrentLocation]->GetActorLocation();
+		targetLoc.Z = GetActorLocation().Z;
+		targetLoc.X = GetActorLocation().X;
+
+		if (targetLoc != GetActorLocation())
+		{
+			SetActorLocation(FMath::Lerp(GetActorLocation(), targetLoc, CharSpeed * DeltaTime));
+		}
+	}
 }
 
 // Called to bind functionality to input
